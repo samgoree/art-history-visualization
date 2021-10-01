@@ -27,6 +27,13 @@ def lightness(im):
     lab_1 = cv2.cvtColor(im, cv2.COLOR_GTR2Lab)
     return np.mean(lab_1[:,:,0])
 
+colorfulness_dict = {
+    'saturation_colorfulness': saturation_colorfulness,
+    'variety_colorfulness': variety_colorfulness,
+    'lightness': lightness
+}
+
+
 def compression_complexity(im):
     uncompressed = im.nbytes
     buf = BytesIO()
@@ -99,21 +106,17 @@ def machado_avg_complexity(canny):
 def machado_std_complexity(canny):
     return np.std(canny)
 
-measures = [
-    machado_jpeg_complexity,
-    machado_zipf_rank_complexity,
-    machado_zipf_size_complexity,
-    machado_avg_complexity,
-    machado_std_complexity
-]
+complexity_measures = {
+    'machado_jpeg_complexity': machado_jpeg_complexity,
+    'machado_zipf_rank_complexity': machado_zipf_rank_complexity,
+    'machado_zipf_size_complexity': machado_zipf_size_complexity,
+    'machado_avg_complexity': machado_avg_complexity,
+    'machado_std_complexity': machado_std_complexity
+}
 
-measure_names = [
-    'machado_jpeg_complexity',
-    'machado_zipf_rank_complexity',
-    'machado_zipf_size_complexity',
-    'machado_avg_complexity',
-    'machado_std_complexity'
-]
+measures = list(complexity_measures.values())
+measure_names = list(complexity_measures.keys())
+
 
 def compute_all_complexity_measures(im):
     im_saturation = cv2.cvtColor(im, cv2.COLOR_BGR2HSV)[:,:,1]
@@ -127,5 +130,14 @@ def compute_all_complexity_measures(im):
             results.append(measure(canny))
     return np.array(results)
 
-colorfulness = variety_colorfulness
-complexity = machado_zipf_rank_complexity
+def colorfulness(im, measure='variety_colorfulness'):
+    return colorfulness_dict[measure](im)
+
+def complexity(im, measure='machado_avg_complexity'):
+    im_saturation = cv2.cvtColor(im, cv2.COLOR_BGR2HSV)[:,:,1]
+    if measure == 'machado_jpeg_complexity':
+        sobel = cv2.Sobel(im_saturation, cv2.CV_8U, 1, 1)
+        return complexity_measures[measure](sobel)
+    else:
+        canny = cv2.Canny(im_saturation, 200, 1)
+        return complexity_measures[measure](canny)

@@ -9,35 +9,34 @@ import changepoint_estimation
 
 
 def plot_images(X, Y, image_paths, canvas_shape=(2000,2000,3), 
-	target_image_resolution=75, ax=None, background_color=(1,1,1)):
-	"""
-	Plot several images on a matplotlib axis
-	X, Y: the coordinates for the scatterplot
-	image_paths: a list of the same length as X and Y with paths to images
-	canvas_shape: the dimensions (in pixels) of the canvas images will be drawn
-	on. The canvas shape will determine the units for matplotlib, so the same
-	canvas shape should be provided to other functions plotting on top of the
-	same axes.
-	target_image_resolution: Images will be resized to this image height. If
-	this value is None, images will be left at their original size/resolution.
-	ax: a matplotlib axis to plot on.
-	background_color: RGB float values for the canvas background color. (0,0,0)
-	is black, (1,1,1) is white.
-	"""
+    target_image_resolution=75, ax=None, background_color=(1,1,1)):
+    """
+    Plot several images on a matplotlib axis
+    X, Y: the coordinates for the scatterplot
+    image_paths: a list of the same length as X and Y with paths to images
+    canvas_shape: the dimensions (in pixels) of the canvas images will be drawn
+    on. The canvas shape will determine the units for matplotlib, so the same
+    canvas shape should be provided to other functions plotting on top of the
+    same axes.
+    target_image_resolution: Images will be resized to this image height. If
+    this value is None, images will be left at their original size/resolution.
+    ax: a matplotlib axis to plot on.
+    background_color: RGB float values for the canvas background color. (0,0,0)
+    is black, (1,1,1) is white.
+    """
 
-	if len(X) != len(Y):
-		raise ValueError(
-			'X and Y provided are of different lengths. len(X): ' 
-			+ str(len(X)) + ' len(Y): ' + str(len(Y))
-		)
-	if len(X) != len(image_paths):
-		raise ValueError(
-			'Different number of X values than image_paths: len(X): ' 
-			+ str(len(X)) + ' len(image_paths): ' + len(image_paths)
-		)
-    
+    if len(X) != len(Y):
+        raise ValueError(
+            'X and Y provided are of different lengths. len(X): ' 
+            + str(len(X)) + ' len(Y): ' + str(len(Y))
+        )
+    if len(X) != len(image_paths):
+        raise ValueError(
+            'Different number of X values than image_paths: len(X): ' 
+            + str(len(X)) + ' len(image_paths): ' + len(image_paths)
+        )
     canvas = np.zeros(canvas_shape) + background_color
-    
+
     if ax is None:
         fig, ax = plt.subplots(figsize=(18,18))
 
@@ -75,13 +74,13 @@ def plot_images(X, Y, image_paths, canvas_shape=(2000,2000,3),
 
         # handle color to grayscale
         if (len(canvas.shape) < 3 or canvas.shape[2] == 1) and (len(im.shape) == 3 and im.shape[2] > 1):
-        	im_to_draw = np.mean(im[:bound_y - int(y),:bound_x - int(x)], axis=2)
+            im_to_draw = np.mean(im[:bound_y - int(y),:bound_x - int(x)], axis=2)
         else:
-        	im_to_draw = im[:bound_y - int(y),:bound_x - int(x)]
+            im_to_draw = im[:bound_y - int(y),:bound_x - int(x)]
 
         # handle uint8 images
         if np.max(im_to_draw) > 1:
-        	im_to_draw /= 256
+            im_to_draw /= 256
 
 
         canvas[int(y):bound_y,int(x):bound_x] = im_to_draw
@@ -91,18 +90,18 @@ def plot_images(X, Y, image_paths, canvas_shape=(2000,2000,3),
     
 
 def plot_means(X, Y, canvas_shape=(2000,2000,3), window_size=1, ax=None, error_bars=True):
-	"""
-	Plot the mean of Y for each value of X (plus or minus window_size) and align
-	it to the canvas
-	X, Y: the coordinates for the scatterplot
-	canvas_shape: the canvas shape used for visual_plot
-	window_size: the mean at position x will be taken for (X,Y) pairs where 
-	x - window_size < X < x + window_size
-	error_bars: use error bars to show standard error
-	"""
+    """
+    Plot the mean of Y for each value of X (plus or minus window_size) and align
+    it to the canvas
+    X, Y: the coordinates for the scatterplot
+    canvas_shape: the canvas shape used for visual_plot
+    window_size: the mean at position x will be taken for (X,Y) pairs where 
+    x - window_size < X < x + window_size
+    error_bars: use error bars to show standard error
+    """
 
 
-	if ax is None:
+    if ax is None:
         fig, ax = plt.subplots(figsize=(18,18))
     avg = []
     stderr = []
@@ -114,13 +113,13 @@ def plot_means(X, Y, canvas_shape=(2000,2000,3), window_size=1, ax=None, error_b
             avg.append(np.mean(np.array(Y)[mask]))
             stderr.append(np.std(np.array(Y)[mask]) / np.sqrt(np.sum(mask)))
     if error_bars:
-    	ax.errorbar(
-    		[x_coord(y) for y in nonzero_years], 
-    		[y_coord(a) for a in avg], 
-    		yerr=[s *  canvas.shape[0] / Y_range for s in stderr], color='k'
-    	)
+        ax.errorbar(
+            [x_coord(y) for y in nonzero_years], 
+            [y_coord(a) for a in avg], 
+            yerr=[s *  canvas.shape[0] / Y_range for s in stderr], color='k'
+        )
     else:
-    	ax.plot([x_coord(y) for y in nonzero_years], [y_coord(a) for a in avg], color='k')
+        ax.plot([x_coord(y) for y in nonzero_years], [y_coord(a) for a in avg], color='k')
     return ax
 
 
