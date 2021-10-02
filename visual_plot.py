@@ -4,6 +4,7 @@ Create a scatterplot of images with matplotlib and PIL
 
 import numpy as np
 import matplotlib.pyplot as plt
+import cv2
 
 import changepoint_estimation
 
@@ -79,14 +80,20 @@ def plot_images(X, Y, image_paths, canvas_shape=(2000,2000,3),
             im_to_draw = im[:bound_y - int(y),:bound_x - int(x)]
 
         # handle uint8 images
+
         if np.max(im_to_draw) > 1:
-            im_to_draw /= 256
+            im_to_draw = im_to_draw.astype('float32') / 256
 
 
         canvas[int(y):bound_y,int(x):bound_x] = im_to_draw
     
     plt.imshow(canvas[::-1], origin='lower')
-    return ax
+    return ax, [
+        X_min,
+        X_max,
+        Y_min,
+        Y_max
+    ]
     
 
 def plot_means(X, Y, canvas_shape=(2000,2000,3), window_size=1, ax=None, error_bars=True):
@@ -185,8 +192,17 @@ def plot_periodization(X, Y, canvas_shape=(2000,2000,3),
     
 
 
-def visual_plot(X, Y, image_paths):
-    # TODO
+def visual_plot(X, Y, image_paths, xlabel='', ylabel='', title=''):
+    """
+    Entrypoint for the full plot, with mean, periodization and images
+    """
+
+    ax, ranges = plot_images(X, Y, image_paths)
+    X_min, X_max, Y_min, Y_max = ranges
+    Y_range = Y_max - Y_min
+
+    plot_means(X,Y, ax=ax)
+    plot_periodization(X,Y, ax=ax)
 
     plt.ylabel(ylabel)
     plt.yticks(
@@ -198,3 +214,5 @@ def visual_plot(X, Y, image_paths):
         plt.xticks([x_coord(x) for x in np.arange(X_min - 2, X_max + 2, 2)], np.arange(X_min - 2, X_max + 2, 2, dtype=int))
     else:
         plt.xticks([x_coord(x) for x in np.arange(X_min - 5, X_max + 5, 5)], np.arange(X_min - 5, X_max + 5, 5, dtype=int))
+
+    return ax
