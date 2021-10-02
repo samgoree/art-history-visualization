@@ -34,11 +34,11 @@ I've been using years for the X values, but you could use any of these measures 
 
 Importantly, these qualities are subjective! Most people perceive them similarly, but different people might have different perception. You should choose the metric which best matches your intuition, and should not treat these visualizations as objective measures of art.
 
-4. Call `visual_plot.visual_plot`. See the demos folder for details.
+4. Call `visual_plot.visual_plot`. See the demos folder for examples.
 
 ## Feedback
 
-Please let me know if you make anything neat with this project! I'm also always happy to talk about visual measures for art, subjectivity, aesthetics and their relationship to computer vision. I'm also happy to help if you run into errors. Please contact me at `sgoree [at] iu.edu`.
+Please let me know if you make anything neat with this project! I'm also always happy to talk about visual measures for art, subjectivity, aesthetics and their relationship to computer vision. I'm also happy to help if you run into errors or have a slightly unusual use case. Please contact me at `sgoree [at] iu.edu`.
 
 ## License
 
