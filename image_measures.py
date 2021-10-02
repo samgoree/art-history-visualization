@@ -1,5 +1,5 @@
 import numpy as np
-import pandas as pd
+np.seterr(all='raise')
 import cv2
 import scipy.stats
 

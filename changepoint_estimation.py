@@ -1,33 +1,60 @@
+import scipy
+import numpy as np
+
+def BIC(n_params, n_data, sum_of_squares):
+    return n_data * np.log(sum_of_squares/n_data) + n_params * np.log(n_data)
+
 def range_filter(x,y,i,j):
     # find elements of (x,y) where X is between i and j
     mask = np.less(x, j) & np.greater_equal(x,i)
     return x[mask], y[mask]
 
-def linear_model(x, y):
+def score_linear_model(x, y):
     """
     Measure the sum square error with a linear fit
     """
     results = scipy.stats.linregress(x, y)
-    sse = np.sum((x_masked * results[0] + results[1] - y_masked)**2)
+    sse = np.sum((x * results[0] + results[1] - y)**2)
     return sse
 
-def constant_model(x, y):
+def predict_linear_model(x_train, y_train, x_test):
+    results = scipy.stats.linregress(x_train, y_train)
+    return x_test * results[0] + results[1]
+
+def score_constant_model(x, y):
     """
     measure the sum square error with a constant fit
     """
-    results = np.mean(y_masked)
-    sse = np.sum((results - y_masked)**2)
+    results = np.mean(y)
+    sse = np.sum((results - y)**2)
+    return sse
+
+def predict_constant_model(x_train, y_train, x_test):
+    result = np.mean(y_train)
+    return 0 * x_test + result
 
 
-def apply_model(x, y, model):
+def score_model(x, y, model):
     if model == 'linear':
-        sse = linear_model(x, y)
+        sse = score_linear_model(x, y)
     elif model == 'constant':
-        sse = constant_model(x, y)
+        sse = score_constant_model(x, y)
     elif model is callable:
         sse = model(x, y)
     else:
         raise ValueError('model must be "linear_model", "constant_model" or callable')
+    return sse
+
+def predict_model(x_train, y_train, x_test, model):
+    if model == 'linear':
+        return predict_linear_model(x_train, y_train, x_test)
+    elif model == 'constant':
+        return predict_constant_model(x_train, y_train, x_test)
+    elif model is callable:
+        return model(x_train, y_train, x_test)
+    else:
+        raise ValueError('model must be "linear_model", "constant_model" or callable')
+    return sse
 
 
 def find_changepoints(x, y, n_changepoints, model='linear'):
@@ -38,7 +65,7 @@ def find_changepoints(x, y, n_changepoints, model='linear'):
     # the optimal solution from i to j using n changepoints is the min error from i to k with n-1 changepoints plus the error on k to j with 0
     
     if n_changepoints == 0:
-        return [], apply_model(x, y)
+        return [], score_model(x, y, model)
 
     candidates = sorted(set(x))
     dp_table = np.zeros([len(candidates), len(candidates)+1, n_changepoints]) + np.inf
@@ -47,10 +74,10 @@ def find_changepoints(x, y, n_changepoints, model='linear'):
     for i in range(len(candidates)):
         for j in range(i+1, len(candidates)+1):
             x_masked, y_masked = range_filter(x,y,candidates[i],candidates[min(j, len(candidates)-1)])
-            if len(x_masked) < 2:
+            if len(x_masked) < 2 or np.min(x_masked) == np.max(x_masked):
                 dp_table[i,j,0] = np.inf
             else:
-                
+                sse = score_model(x_masked, y_masked, model)
                 if np.isnan(sse):
                     dp_table[i,j,0] = np.inf
                 else:
