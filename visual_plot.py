@@ -90,7 +90,7 @@ def plot_images(X, Y, image_paths, canvas_shape=(2000,2000,3),
 
         canvas[int(y):bound_y,int(x):bound_x] = im_to_draw
     
-    ax.imshow(canvas[::-1], origin='lower')
+    ax.imshow(canvas[::-1], origin='lower', aspect="auto")
     return ax, [
         X_min,
         X_max,
@@ -234,7 +234,8 @@ def visual_plot(X, Y, image_paths, ax=None, model='linear',
     X = np.array(X)
     Y = np.array(Y)
 
-    ax, ranges, x_coord, y_coord = plot_images(X, Y, image_paths, ax=ax)
+    ax, ranges, x_coord, y_coord = plot_images(X, Y, image_paths, ax=ax, 
+        target_image_resolution=target_image_resolution)
     X_min, X_max, Y_min, Y_max = ranges
     Y_range = Y_max - Y_min
 
