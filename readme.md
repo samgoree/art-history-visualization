@@ -2,7 +2,7 @@
 
 ![plots of artworks by mark rothko](/rothko.png)
 
-This repository has code that I use to visualize collections of paintings, and specifically, to track how their colorfulness or complexity changes across time. While these are simplistic visualizations, I've found them very helpful in my work.
+This repository has code that I use to visualize collections of paintings, and specifically, to track how their colorfulness or complexity changes across time. While these are simplistic visualizations, I've found them very helpful in my work. [Check out my blog](https://samgoree.github.io/2021/10/02/art-history-visualization.html) for a discussion of my approach.
 
 ## Instructions
 
