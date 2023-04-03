@@ -15,6 +15,7 @@ def score_linear_model(x, y):
     """
     results = scipy.stats.linregress(x, y)
     sse = np.sum((x * results[0] + results[1] - y)**2)
+    if any([np.isnan(r) for r in results]): return np.inf
     return sse
 
 def predict_linear_model(x_train, y_train, x_test):
@@ -59,11 +60,16 @@ def predict_model(x_train, y_train, x_test, model):
 
 def find_changepoints(x, y, n_changepoints, model='linear'):
     """
-    TODO
+    find the changepoints for a model with n_changepoints fit to data (x,y)
+    x,y are data arrays which should be the same length
+    n_changepoints should be an integer < len(x)
+    model should either be 'linear' or 'constant'
+    returns a list of changepoint locations and the sum of squared errors
     """
     # this is a dynamic programming problem
     # the optimal solution from i to j using n changepoints is the min error from i to k with n-1 changepoints plus the error on k to j with 0
     
+    assert len(x) == len(y)
     if n_changepoints == 0:
         return [], score_model(x, y, model)
 

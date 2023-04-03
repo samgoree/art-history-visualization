@@ -97,6 +97,43 @@ def plot_images(X, Y, image_paths, canvas_shape=(2000,2000,3),
         Y_min,
         Y_max
     ], x_coord, y_coord
+
+def plot_images_without_images(X, Y, ax=None):
+    """
+    Similar to plot_images, except no images, just a scatterplot
+    X, Y: the coordinates for the scatterplot
+    ax: a matplotlib axis to plot on.
+    """
+
+    if len(X) != len(Y):
+        raise ValueError(
+            'X and Y provided are of different lengths. len(X): ' 
+            + str(len(X)) + ' len(Y): ' + str(len(Y))
+        )
+
+    if ax is None:
+        fig, ax = plt.subplots(figsize=(18,18))
+
+    Y_max = np.max(Y)
+    Y_min = np.min(Y)
+    Y_range = Y_max - Y_min
+    
+    X_max = np.max(X)
+    X_min = np.min(X)
+    X_range = X_max - X_min
+    
+    def x_coord(x):
+        return x
+    def y_coord(y):
+        return y
+
+    plt.scatter([x_coord(x) for x in X], [y_coord(y) for y in Y])
+    return ax, [
+        X_min,
+        X_max,
+        Y_min,
+        Y_max
+    ], x_coord, y_coord
     
 
 def plot_means(X, Y, canvas_shape=(2000,2000,3), 
@@ -216,14 +253,57 @@ def plot_periodization(X, Y, canvas_shape=(2000,2000,3),
             & np.greater_equal(X, changepoints[i-1]) 
             & mask
             )
-        if np.sum(segment_mask) == 0:
+        if np.sum(segment_mask) < 2 or (changepoints[i] - changepoints[i-1]) <= 1:
             continue
 
         x_vals = np.arange(changepoints[i-1], changepoints[i])
         y_vals = changepoint_estimation.predict_model(X[segment_mask], Y[segment_mask], x_vals, model)
         ax.plot([x_coord(x) for x in x_vals], [y_coord(y) for y in y_vals], color='b')
     
+def plot_without_images(X, Y, ax=None, model='linear',
+    target_image_resolution=75, window_size=1, means=True, error_bars=True,
+    periodization=True, min_changepoints=0, max_changepoints=10):
+    """
+    do the visual plot, but only the data points, no images
+    """
+    X = np.array(X)
+    Y = np.array(Y)
+    
+    ax, ranges, x_coord, y_coord = plot_images_without_images(X, Y, ax=ax)
+    X_min, X_max, Y_min, Y_max = ranges
+    Y_range = Y_max - Y_min
 
+    if means:
+        plot_means(X, Y, ax=ax, x_coord=x_coord, y_coord=y_coord, 
+        window_size=window_size, error_bars=error_bars)
+    if periodization:
+        plot_periodization(X,Y, ax=ax, x_coord=x_coord, y_coord=y_coord, model=model,
+        min_changepoints=min_changepoints, max_changepoints=max_changepoints)
+
+    ax.set_yticks(
+        [y_coord(y) for y in np.arange(
+            Y_min * 0.9, Y_max * 1.1, Y_range/10
+        )]
+    )
+    ax.set_yticklabels(
+        [round(s,2) for s in np.arange(Y_min * 0.9, Y_max * 1.1, Y_range/10)]
+    )
+    if X_max - X_min < 50:
+        ax.set_xticks(
+            [x_coord(x) for x in np.arange(X_min - 2, X_max + 2, 2)]
+        )
+        ax.set_xticklabels(
+            np.arange(X_min - 2, X_max + 2, 2, dtype=int)
+        )
+    else:
+        ax.set_xticks(
+            [x_coord(x) for x in np.arange(X_min - 5, X_max + 5, 5)]
+        )
+        ax.set_xticklabels(
+            np.arange(X_min - 5, X_max + 5, 5, dtype=int)
+        )
+
+    return ax
 
 def visual_plot(X, Y, image_paths, ax=None, model='linear',
     target_image_resolution=75, window_size=1, means=True, error_bars=True,

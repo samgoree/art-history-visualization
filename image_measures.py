@@ -1,5 +1,4 @@
 import numpy as np
-np.seterr(all='raise')
 import cv2
 import scipy.stats
 
