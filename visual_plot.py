@@ -34,7 +34,7 @@ def plot_images(X, Y, image_paths, canvas_shape=(2000,2000,3),
     if len(X) != len(image_paths):
         raise ValueError(
             'Different number of X values than image_paths: len(X): ' 
-            + str(len(X)) + ' len(image_paths): ' + len(image_paths)
+            + str(len(X)) + ' len(image_paths): ' + str(len(image_paths))
         )
     canvas = np.zeros(canvas_shape) + background_color
 
@@ -71,7 +71,11 @@ def plot_images(X, Y, image_paths, canvas_shape=(2000,2000,3),
         x = x_coord(X[i])
         y = canvas.shape[0] - y_coord(Y[i])
         
+        if target_image_resolution > max(im.shape[0], im.shape[1]):
+            raise ValueError('Target image resolution is larger than image ' + str(image_paths[i]) + ' shape ' + str(im.shape))
+        
         downsample_factor = int(max(im.shape[0], im.shape[1]) / target_image_resolution)
+        if downsample_factor < 1: downsample_factor = 1
         im = im[::downsample_factor,::downsample_factor]
 
         bound_x = int(min(x+im.shape[1], canvas.shape[1]))
@@ -160,7 +164,7 @@ def count_params(n_changepoints, param_fcn):
         # one parameter for each of n_changepoints + 1 constant sections, 
         # plus n_changepoints
         return (n_changepoints + 1) * 1 + n_changepoints
-
+    else: return 0
 
 def plot_periodization(X, Y, canvas_shape=(2000,2000,3), 
     min_changepoints=0, max_changepoints=10, 
@@ -226,18 +230,30 @@ def plot_periodization(X, Y, canvas_shape=(2000,2000,3),
 
 
 def visual_plot(X, Y, image_paths, ax=None, model='linear',
-    target_image_resolution=75, window_size=1, means=True, error_bars=True,
-    periodization=True, min_changepoints=0, max_changepoints=10):
+    target_image_resolution=75, canvas_width=2000, canvas_height=2000, window_size=1, means=True, error_bars=True,
+    periodization=True, min_changepoints=0, max_changepoints=10, yticks=None, xticks=None):
     """
     Entrypoint for the full plot, with mean, periodization and images
+    X,Y are the scatter plot coordinates
+    image_paths are paths to the images, should be the same length as X and Y
+    ax is the matplotlib axis to use
+    model is either 'linear' or 'constant' for the trend line, only used if periodization is True
+    target_image_resolution specifies the resolution to use for images to avoid huge output files
+    canvas_width and canvas_height specify the pixel dimensions for the canvas
+    window_size is the window for the rolling average on Y, only used if means is True
+    means is whether or not to plot the mean of Y at each X value
+    error_bars specifies whether the means will be plotted with error bars, only used if means is True
+    periodization is whether to split into periods along X with trend lines
+    min/max_changpoints are the space of possible change points to search for periodization
     """
     X = np.array(X)
     Y = np.array(Y)
 
     ax, ranges, x_coord, y_coord = plot_images(X, Y, image_paths, ax=ax, 
-        target_image_resolution=target_image_resolution)
+        target_image_resolution=target_image_resolution, canvas_shape=(canvas_height, canvas_width,3))
     X_min, X_max, Y_min, Y_max = ranges
     Y_range = Y_max - Y_min
+    X_range = X_max - X_min
 
     if means:
         plot_means(X, Y, ax=ax, x_coord=x_coord, y_coord=y_coord, 
@@ -245,28 +261,36 @@ def visual_plot(X, Y, image_paths, ax=None, model='linear',
     if periodization:
         plot_periodization(X,Y, ax=ax, x_coord=x_coord, y_coord=y_coord, model=model,
         min_changepoints=min_changepoints, max_changepoints=max_changepoints)
-
-    ax.set_yticks(
-        [y_coord(y) for y in np.arange(
-            Y_min * 0.9, Y_max * 1.1, Y_range/10
-        )]
-    )
-    ax.set_yticklabels(
-        [round(s,2) for s in np.arange(Y_min * 0.9, Y_max * 1.1, Y_range/10)]
-    )
-    if X_max - X_min < 50:
-        ax.set_xticks(
-            [x_coord(x) for x in np.arange(X_min - 2, X_max + 2, 2)]
+    
+    if yticks is None:
+        ax.set_yticks(
+            [y_coord(y) for y in np.arange(
+                Y_min * 0.9, Y_max * 1.1, Y_range/10
+            )]
         )
-        ax.set_xticklabels(
-            np.arange(X_min - 2, X_max + 2, 2, dtype=int)
+        ax.set_yticklabels(
+            [round(s,2) for s in np.arange(Y_min * 0.9, Y_max * 1.1, Y_range/10)]
         )
     else:
-        ax.set_xticks(
-            [x_coord(x) for x in np.arange(X_min - 5, X_max + 5, 5)]
-        )
-        ax.set_xticklabels(
-            np.arange(X_min - 5, X_max + 5, 5, dtype=int)
-        )
+        ax.set_yticks([y_coord(y) for y in yticks])
+        ax.set_yticklabels([round(s,2) for s in yticks])
+    if xticks is None:
+        if X_max - X_min < 50:
+            ax.set_xticks(
+                [x_coord(x) for x in np.arange(X_min - 2, X_max + 2, 2)]
+            )
+            ax.set_xticklabels(
+                np.arange(X_min - 2, X_max + 2, 2, dtype=int)
+            )
+        else:
+            ax.set_xticks(
+                [x_coord(x) for x in np.arange(X_min - 5, X_max + 5, X_range/20)]
+            )
+            ax.set_xticklabels(
+                np.arange(X_min - 5, X_max + 5, X_range/20, dtype=int)
+            )
+    else:
+        ax.set_xticks([x_coord(x) for x in xticks])
+        ax.set_xticklabels([round(s,2) for s in xticks])
 
     return ax
