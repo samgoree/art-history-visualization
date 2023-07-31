@@ -22,6 +22,21 @@ def variety_colorfulness(im):
     mean = np.mean(lab_1, axis=(0,1))
     return np.mean(np.sqrt((lab_1[:,:,1] - mean[1])**2 + (lab_1[:,:,2] - mean[2])**2))
 
+def mu_ab(im):
+    lab = cv2.cvtColor(im, cv2.COLOR_BGR2Lab)
+    mean_a = np.mean(lab[:,:,1])
+    mean_b = np.mean(lab[:,:,2])
+    return np.sqrt(mean_a ** 2 + mean_b ** 2)
+
+def sigma_ab(im):
+    lab = cv2.cvtColor(im, cv2.COLOR_BGR2Lab)
+    sigma_a = np.std(lab[:,:,1])
+    sigma_b = np.std(lab[:,:,2])
+    return np.sqrt(sigma_a ** 2 + sigma_b ** 2)
+
+def hasler_susstrunk_colorfulness(im):
+    return sigma_ab(im) + 0.37 * mu_ab(im)
+
 def lightness(im):
     lab_1 = cv2.cvtColor(im, cv2.COLOR_GTR2Lab)
     return np.mean(lab_1[:,:,0])
@@ -29,6 +44,7 @@ def lightness(im):
 colorfulness_dict = {
     'saturation_colorfulness': saturation_colorfulness,
     'variety_colorfulness': variety_colorfulness,
+    'hasler_susstrunk_colorfulness': hasler_susstrunk_colorfulness,
     'lightness': lightness
 }
 
@@ -129,11 +145,16 @@ def compute_all_complexity_measures(im):
             results.append(measure(canny))
     return np.array(results)
 
-def colorfulness(im, measure='variety_colorfulness'):
+def colorfulness(im, measure='hasler_susstrunk_colorfulness'):
     return colorfulness_dict[measure](im)
 
 def complexity(im, measure='machado_avg_complexity'):
-    im_saturation = cv2.cvtColor(im, cv2.COLOR_BGR2HSV)[:,:,1]
+    if len(im.shape) == 2:
+        im_saturation = im
+    else:
+        im_saturation = cv2.cvtColor(im, cv2.COLOR_BGR2HSV)[:,:,1]
+    if np.mean(im_saturation) == 0:
+        im_saturation = im.mean(axis=2).astype('uint8')
     if measure == 'machado_jpeg_complexity':
         sobel = cv2.Sobel(im_saturation, cv2.CV_8U, 1, 1)
         return complexity_measures[measure](sobel)
