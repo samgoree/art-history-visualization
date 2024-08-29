@@ -38,8 +38,8 @@ Importantly, these qualities are subjective! Most people perceive them similarly
 
 ## Feedback
 
-Please let me know if you make anything neat with this project! I'm also always happy to talk about visual measures for art, subjectivity, aesthetics and their relationship to computer vision. I'm also happy to help if you run into errors or have a slightly unusual use case. Please contact me at `sgoree [at] iu.edu`.
+Please let me know if you make anything neat with this project! I'm also always happy to talk about visual measures for art, subjectivity, aesthetics and their relationship to computer vision. I'm also happy to help if you run into errors or have a slightly unusual use case. Please contact me at `sgoree [at] stonehill.edu`.
 
 ## License
 
-This work is open source under the [GNU General Public License](https://en.wikipedia.org/wiki/GNU_General_Public_License). If you would like to use this code for commercial purposes, please contact Sam Goree at `sgoree [at] iu.edu`.
+This work is open source under the [GNU General Public License](https://en.wikipedia.org/wiki/GNU_General_Public_License). If you would like to use this code for commercial purposes, please contact Sam Goree at `sgoree [at] stonehill.edu`.
